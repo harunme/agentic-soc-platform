@@ -130,6 +130,24 @@ class Case(BaseWorksheetEntity[CaseModel]):
         )
         return cls.list(filter_model, lazy_load=lazy_load)
 
+    @classmethod
+    def get_by_case_id(cls, case_id) -> Union[CaseModel, None]:
+        filter_model = Group(
+            logic="AND",
+            children=[
+                Condition(
+                    field="id",
+                    operator=Operator.EQ,
+                    value=case_id
+                )
+            ]
+        )
+        result = cls.list(filter_model, lazy_load=True)
+        if result:
+            return result[0]
+        else:
+            return None
+
 
 class Message(BaseWorksheetEntity[MessageModel]):
     """Message 实体类"""

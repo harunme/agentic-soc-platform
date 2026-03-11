@@ -14,7 +14,7 @@ if __name__ == "__main__":
     import django
 
     django.setup()
-    from Lib.llmfunc import function_call_debug, get_case_by_rowid
+    from PLUGINS.MCP.llmfunc import get_case_by_rowid
 
     # Define UUID file path
     uuid_file_path = os.path.join(BASE_DIR, "Docker", "mcp_uuid")
@@ -39,7 +39,6 @@ if __name__ == "__main__":
     mcp.settings.port = port
 
     # add tools
-    mcp.add_tool(function_call_debug)
     mcp.add_tool(get_case_by_rowid)
     print(f"mcp server url: http://your_server_ip:{port}/{uuid_str}/sse")
     mcp.run(transport="sse")

@@ -532,7 +532,7 @@ class KnowledgeModel(BaseSystemModel):
 
 class EnrichmentModel(BaseSystemModel):
     ai_exclude_fields: ClassVar[set[str]] = {'ownerid', 'caid', 'uaid'}
-
+    id: Optional[str] = Field(default=None)
     name: Optional[str] = Field(default="", description="富化信息的名称或标题")
     type: Optional[str] = Field(default="Other", description="富化信息的类型", json_schema_extra={"type": 2})
     provider: Optional[str] = Field(default="Other", description="富化信息的提供方，例如威胁情报厂商", json_schema_extra={"type": 2})
@@ -556,7 +556,7 @@ class TicketModel(BaseSystemModel):
 
 class ArtifactModel(BaseSystemModel):
     ai_exclude_fields: ClassVar[set[str]] = {'ownerid', 'caid', 'uaid'}
-
+    id: Optional[str] = Field(default=None)
     name: Optional[str] = Field(default="", description="实体（Artifact）的名称，通常与值相同或为其描述")
     type: Optional[ArtifactType] = Field(
         default=None, description="实体的类型, 例如: IP地址, 主机名, 文件哈希等")
@@ -578,7 +578,7 @@ class ArtifactModel(BaseSystemModel):
 
 class AlertModel(BaseSystemModel):
     ai_exclude_fields: ClassVar[set[str]] = {'ownerid', 'caid', 'uaid', "summary_ai", "case"}
-
+    id: Optional[str] = Field(default=None)
     severity: Optional[Severity] = Field(default=None,
                                          description="告警的严重性，由源安全产品定义")
     title: Optional[str] = Field(default="", description="告警的标题")
@@ -664,7 +664,7 @@ class CaseModel(BaseSystemModel):
     ai_exclude_fields: ClassVar[set[str]] = {'ownerid', 'caid', 'uaid', "workbook", "analysis_rationale_ai", "recommended_actions_ai", "attack_stage_ai",
                                              "severity_ai", "confidence_ai",
                                              "threat_hunting_report_ai"}
-
+    id: Optional[str] = Field(default=None)
     title: Optional[str] = Field(default="", description="安全事件的标题, 应能简明扼要地概括事件的核心内容")
     severity: Optional[Severity] = Field(default=None,
                                          description="由分析师评估或重新定义的事件严重性")
