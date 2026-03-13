@@ -48,7 +48,7 @@ class Condition(BaseModel):
 class Group(BaseModel):
     type: Literal["group"] = "group"
     logic: Literal["AND", "OR"] = "AND"
-    children: List[Union[Group, Condition]]
+    children: List[Union[Group, Condition]] = []
 
 
 class Operator(str, Enum):

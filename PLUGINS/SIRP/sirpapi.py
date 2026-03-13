@@ -131,7 +131,7 @@ class Case(BaseWorksheetEntity[CaseModel]):
         return cls.list(filter_model, lazy_load=lazy_load)
 
     @classmethod
-    def get_by_case_id(cls, case_id) -> Union[CaseModel, None]:
+    def get_by_case_id(cls, case_id, lazy_load=False) -> Union[CaseModel, None]:
         filter_model = Group(
             logic="AND",
             children=[
@@ -142,7 +142,7 @@ class Case(BaseWorksheetEntity[CaseModel]):
                 )
             ]
         )
-        result = cls.list(filter_model, lazy_load=True)
+        result = cls.list(filter_model, lazy_load=lazy_load)
         if result:
             return result[0]
         else:

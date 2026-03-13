@@ -79,7 +79,10 @@ class BaseWorksheetEntity(ABC, Generic[T]):
         Returns:
             模型实例列表
         """
-        filter_dict = filter_model.model_dump()
+        if filter_model.children:
+            filter_dict = filter_model.model_dump()
+        else:
+            filter_dict = {}
         result = WorksheetRow.list(
             cls.WORKSHEET_ID,
             filter_dict,

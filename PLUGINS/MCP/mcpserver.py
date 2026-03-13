@@ -15,8 +15,7 @@ if __name__ == "__main__":
 
     django.setup()
     from PLUGINS.MCP.llmfunc import (
-        get_case_by_rowid,
-        get_case_by_case_id,
+        get_case,
         list_cases,
         create_case,
         update_case
@@ -45,8 +44,7 @@ if __name__ == "__main__":
     mcp.settings.port = port
 
     # add tools
-    mcp.add_tool(get_case_by_rowid)
-    mcp.add_tool(get_case_by_case_id)
+    mcp.add_tool(get_case)
     mcp.add_tool(list_cases)
     mcp.add_tool(create_case)
     mcp.add_tool(update_case)

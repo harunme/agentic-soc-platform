@@ -78,8 +78,12 @@ class WorksheetRow(object):
                     continue
             else:
                 field = fields.get(alias)
+
                 if field is None:
                     logger.warning(f"field {alias} not found in fields")
+                    for key in fields:
+                        if fields[key]['id'] == alias:
+                            logger.warning(f"error field  is '{fields[key]['name']}'")
                     continue
                 data_new[alias] = WorksheetRow._format_input_value(field, row[alias])
         return data_new
