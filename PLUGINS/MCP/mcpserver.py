@@ -17,8 +17,9 @@ if __name__ == "__main__":
     from PLUGINS.MCP.llmfunc import (
         get_case,
         list_cases,
-        # create_case,
-        update_case
+        update_case,
+        siem_keyword_search,
+        get_current_time,
     )
 
     # Define UUID file path
@@ -46,7 +47,8 @@ if __name__ == "__main__":
     # add tools
     mcp.add_tool(get_case)
     mcp.add_tool(list_cases)
-    # mcp.add_tool(create_case)
     mcp.add_tool(update_case)
+    mcp.add_tool(siem_keyword_search)
+    mcp.add_tool(get_current_time)
     print(f"mcp server url: http://your_server_ip:{port}/{uuid_str}/sse")
     mcp.run(transport="sse")

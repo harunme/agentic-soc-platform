@@ -1,5 +1,8 @@
+from datetime import datetime, timedelta, timezone
 from typing import Annotated, Optional
 
+from PLUGINS.SIEM.models import KeywordSearchInput
+from PLUGINS.SIEM.tools import SIEMToolKit
 from PLUGINS.SIRP.nocolymodel import Group, Condition, Operator
 from PLUGINS.SIRP.sirpapi import Case
 from PLUGINS.SIRP.sirpmodel import CaseModel, Severity, CaseStatus, CaseVerdict, Confidence
@@ -37,22 +40,6 @@ def list_cases(
     for model in models[:limit]:
         result.append(model.model_dump_json_for_ai())
     return result
-
-
-def create_case(
-        title: Annotated[str, "Case title"],
-        severity: Annotated[str, "Severity level: Critical, High, Medium, Low, Info"],
-        description: Annotated[str, "Case description"] = "",
-        status: Annotated[str, "Case status"] = "New"
-) -> Annotated[str, "Row ID of the created case"]:
-    """Create a new security case."""
-    case_model = CaseModel(
-        title=title,
-        severity=Severity(severity),
-        description=description,
-        status=CaseStatus(status)
-    )
-    return Case.create(case_model)
 
 
 def update_case(
@@ -93,6 +80,34 @@ def update_case(
     return Case.update(case_new)
 
 
+def siem_keyword_search(
+        keyword: Annotated[str, "Search keyword. Can be IP address, hostname, username, or any string to search across all fields"],
+        time_range_start: Annotated[str, "Start time in UTC ISO8601 format. Example: 2026-02-04T06:00:00Z"],
+        time_range_end: Annotated[str, "End time in UTC ISO8601 format. Example: 2026-02-04T07:00:00Z"],
+        time_field: Annotated[str, "The field to apply time range filter on"] = "@timestamp",
+        index_name: Annotated[Optional[str], "Target SIEM index/source name. If None, searches across all indices"] = None
+) -> Annotated[list[str], "Keyword search results as AI-friendly JSON strings"]:
+    input_data = KeywordSearchInput(
+        keyword=keyword,
+        time_range_start=time_range_start,
+        time_range_end=time_range_end,
+        time_field=time_field,
+        index_name=index_name
+    )
+    results = SIEMToolKit.keyword_search(input_data)
+    return [item.model_dump_json() for item in results]
+
+
+def get_current_time(
+        time_format: Annotated[
+            Optional[str], "Optional datetime format string. If not provided, returns ISO 8601 time with timezone information accurate to seconds"] = None
+) -> Annotated[str, "Current system time string with timezone information"]:
+    current_time = datetime.now().astimezone()
+    if time_format:
+        return current_time.strftime(time_format)
+    return current_time.isoformat(timespec="seconds")
+
+
 if __name__ == "__main__":
     import os
 
@@ -100,6 +115,15 @@ if __name__ == "__main__":
     import django
 
     django.setup()
+    print(get_current_system_time())
+    time_range_end = datetime.now(timezone.utc)
+    time_range_start = time_range_end - timedelta(minutes=10)
+    siem_results = siem_keyword_search(
+        keyword="227.174.159.18",
+        time_range_start=time_range_start.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        time_range_end=time_range_end.strftime("%Y-%m-%dT%H:%M:%SZ")
+    )
+    print(siem_results)
     cases = list_cases(limit=1)
     print(cases)
     if cases:
