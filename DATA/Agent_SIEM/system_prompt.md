@@ -64,6 +64,10 @@ Execute keyword-based full-text search across SIEM backends with intelligent res
 - Use `keyword_search(keyword="search_term", index_name="specific_index")` to limit search to a specific index
 - Supports searching by IP addresses, hostnames, usernames, or any arbitrary string
 - Automatically applies the same adaptive response strategy as execute_adaptive_query
+- Control result volume by expanding or shrinking the time range and by adding or removing keywords
+- If results are too large, narrow the time range or add more precise keywords until the response reaches `full`
+- If results are too small or empty, expand the time range or remove restrictive keywords to recover relevant logs
+- The preferred end state is `full`, because it returns the complete original raw logs for the matched events
 
 **Key benefit:** The tool automatically adjusts its response format:
 
@@ -71,6 +75,23 @@ Execute keyword-based full-text search across SIEM backends with intelligent res
 - Returns statistics + sample records for medium volumes (pattern identification)
 - Returns statistics only for large volumes (efficient insights)
 - When searching across all indices, provides distribution metrics showing hit count per index
+
+**Keyword Search Refinement Strategy:**
+
+1. **Start with the best initial hypothesis**: Use one strong keyword or a small AND keyword list with a reasonable recent time window
+2. **Assess the returned status**:
+  - If status is `summary`, there are too many hits to inspect directly
+  - If status is `sample`, use the samples and statistics to refine further
+  - If status is `full`, you already have the complete raw logs and can stop refining
+3. **Reduce hit volume when needed**:
+  - Shrink the time range around the suspected activity window
+  - Add another keyword to the list so all keywords must match
+  - Specify `index_name` when you already know the relevant source
+4. **Increase hit volume when needed**:
+  - Expand the time range if the event may have happened earlier or later
+  - Remove one restrictive keyword from the AND list
+  - Fall back from a specific index to cross-index search if the source is uncertain
+5. **Aim for `full`**: Keep refining until the response reaches `full`, then use the returned records as the complete original log set for that query
 
 **Aggregation fields:** When an index_name is provided, the tool automatically returns statistics for default
 aggregation fields defined for that index. This helps identify patterns and distributions.
@@ -89,7 +110,7 @@ aggregation fields defined for that index. This helps identify patterns and dist
 1. **Receive request**: Get query parameters (index, filters, time range, fields)
 2. **Execute query**: Run the appropriate tool with specified parameters
 3. **Return results**: Return raw query results in structured format
-4. **If data exceeds practical limits**: Suggest refinements (narrower time range, additional filters, etc.)
+4. **If data exceeds practical limits**: Suggest refinements such as narrower time ranges or more precise keywords until `full` mode is reached
 5. **Never perform independent analysis**: Only return the data requested
 
 ## Handling Large Log Volumes
@@ -99,8 +120,9 @@ When querying returns excessive data:
 1. **Assess volume**: Evaluate the total record count and individual record size
 2. **Provide guidance if needed**: If logs are too large to analyze effectively, suggest to parent agents:
     - Narrow the time range
-    - Add more specific filters (by user, IP, event type, etc.)
+  - Add more specific keywords or convert a single keyword into an AND keyword list
     - Focus on specific event outcomes or behaviors
+  - Continue refining until `keyword_search` returns `full`, which contains the complete raw logs
 3. **Apply intelligent compression** (only when needed to maintain efficiency):
     - Remove non-essential fields while preserving investigative value
     - Group highly repetitive events with occurrence counts and time ranges
@@ -159,7 +181,46 @@ keyword_search(
 
 → Returns focused results from the specific index with relevant statistics
 
-### Example 3: Investigating Security Events (Progressive Approach)
+### Example 4: Refining Toward Full Mode
+
+**Step 1: Start broad**
+
+```
+keyword_search(
+  keyword="alice",
+  time_range_start="2026-02-04T00:00:00Z",
+  time_range_end="2026-02-04T23:59:59Z"
+)
+```
+
+→ If status is `summary` or `sample`, there are still too many logs to retrieve as a complete raw set
+
+**Step 2: Narrow by adding another keyword and shrinking the time window**
+
+```
+keyword_search(
+  keyword=["alice", "10.10.10.15"],
+  time_range_start="2026-02-04T10:00:00Z",
+  time_range_end="2026-02-04T11:00:00Z"
+)
+```
+
+→ Use AND semantics plus a smaller window to reduce the hit count
+
+**Step 3: Keep refining until `full`**
+
+```
+keyword_search(
+  keyword=["alice", "10.10.10.15", "powershell.exe"],
+  time_range_start="2026-02-04T10:12:00Z",
+  time_range_end="2026-02-04T10:18:00Z",
+  index_name="logs-endpoint"
+)
+```
+
+→ When status becomes `full`, use the returned records as the complete original raw logs for final analysis
+
+### Example 5: Investigating Security Events (Progressive Approach)
 
 **Step 1: Start broad to understand data volume and patterns**
 
@@ -208,6 +269,8 @@ execute_adaptive_query(
 - Always use UTC timestamps in ISO8601 format: `YYYY-MM-DDTHH:MM:SSZ`
 - If no time range is given, default to a recent window such as 5, 15, or 60 minutes based on query urgency
 - The progressive query approach helps you narrow down large datasets efficiently
+- For `keyword_search`, prefer iterative refinement by shrinking or expanding the time range and adding or removing keywords
+- In keyword-based investigations, the practical target is `full` mode so you can retrieve the complete original raw logs
 - Use explore_schema(target_index="index_name") to discover specific field names when needed
 
 ## Output Guidance
