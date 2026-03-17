@@ -661,6 +661,8 @@ class AlertModel(BaseSystemModel):
     attachments: Optional[Union[List[AttachmentModel], str]] = Field(default=[], description="Alert attachments")
 
     # AI字段
+    severity_ai: Optional[Severity] = Field(default=None, description="AI-assessed severity")
+    confidence_ai: Optional[Confidence] = Field(default=None, description="AI-assessed confidence")
     comment_ai: Optional[str] = Field(default="", description="AI-generated comment")
 
     # 反向关联
