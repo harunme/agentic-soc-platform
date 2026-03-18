@@ -48,7 +48,6 @@ class PlaybookLoader(object):
     @staticmethod
     def load_all_playbook_config():
         all_modules_config = []
-        # post module
         module_count = 0
         module_filenames = os.listdir(os.path.join(BASE_DIR, 'PLAYBOOKS'))
         for module_filename in module_filenames:
