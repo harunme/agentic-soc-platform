@@ -17,10 +17,10 @@
 
 ### 2.1 Playbook
 
-1. 查询某个目标对象可用的 Playbook 列表
-2. 触发执行指定 Playbook
-3. 查询某次执行的状态与消息
-4. 传入 `user_input` 触发 AI 分析流程
+1. 增加 Playbook 配置列表查询接口，直接使用 `PlaybookLoader.list_playbook_config()`，返回完整列表，不区分目标对象
+2. 增加 Playbook 执行接口，直接使用 `Playbook.add_pending_playbook()` 创建 pending 记录，由其他逻辑继续处理
+3. 为 Playbook 增加 `get_by_id()`，用于查询某次执行的状态与消息
+4. 在 Playbook 执行接口中支持传入 `user_input`，作为用户对当前 Playbook 的附加自然语言要求，由 Playbook 内部决定是否加入 prompt
 
 ### 2.2 Artifact
 

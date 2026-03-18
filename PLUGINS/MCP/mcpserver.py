@@ -42,13 +42,15 @@ if __name__ == "__main__":
         append_artifact,
         append_enrichment,
         create_ticket,
+        execute_playbook,
         get_alert_discussions,
         get_case_discussions,
         list_alerts,
+        list_available_playbook_definitions,
         list_artifacts,
         list_cases,
         list_knowledge,
-        list_playbooks,
+        list_playbook_runs,
         list_tickets,
         update_alert,
         update_case,
@@ -63,13 +65,15 @@ if __name__ == "__main__":
     mcp.add_tool(append_artifact)
     mcp.add_tool(append_enrichment)
     mcp.add_tool(create_ticket)
+    mcp.add_tool(execute_playbook)
     mcp.add_tool(get_alert_discussions)
     mcp.add_tool(get_case_discussions)
     mcp.add_tool(list_alerts)
+    mcp.add_tool(list_available_playbook_definitions)
     mcp.add_tool(list_artifacts)
     mcp.add_tool(list_cases)
     mcp.add_tool(list_knowledge)
-    mcp.add_tool(list_playbooks)
+    mcp.add_tool(list_playbook_runs)
     mcp.add_tool(list_tickets)
     mcp.add_tool(update_alert)
     mcp.add_tool(update_case)

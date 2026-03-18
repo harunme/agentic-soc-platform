@@ -476,6 +476,24 @@ class Playbook(BaseWorksheetEntity[PlaybookModel]):
     MODEL_CLASS = PlaybookModel
 
     @classmethod
+    def get_by_id(cls, playbook_id, lazy_load=False) -> Union[PlaybookModel, None]:
+        filter_model = Group(
+            logic="AND",
+            children=[
+                Condition(
+                    field="id",
+                    operator=Operator.EQ,
+                    value=playbook_id
+                )
+            ]
+        )
+        result = cls.list(filter_model, lazy_load=lazy_load)
+        if result:
+            return result[0]
+        else:
+            return None
+
+    @classmethod
     def list_pending_playbooks(cls) -> List[PlaybookModel]:
         """获取待处理的playbooks"""
 

@@ -2,6 +2,7 @@ import json
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, Optional
 
+from Lib.playbookloader import PlaybookLoader
 from PLUGINS.SIEM.models import AdaptiveQueryInput, KeywordSearchInput, SchemaExplorerInput
 from PLUGINS.SIEM.tools import SIEMToolKit
 from PLUGINS.SIRP.nocolymodel import Group, Condition, Operator
@@ -10,14 +11,7 @@ from PLUGINS.SIRP.sirpmodel import ArtifactReputationScore, ArtifactRole, Artifa
     AttackStage, KnowledgeAction, KnowledgeSource, PlaybookJobStatus, PlaybookType, TicketStatus, TicketType
 
 
-def get_case_discussions(
-        case_id: Annotated[str, "Case ID, e.g. case_000005"]
-) -> Annotated[Optional[list[str]], "Case discussions as JSON list, or None if case not found"]:
-    """Get case discussions by case ID."""
-    discussions = Case.get_discussions(case_id)
-    if discussions is None:
-        return None
-    return [json.dumps(item, ensure_ascii=False) for item in discussions]
+# Case
 
 
 def list_cases(
@@ -57,6 +51,16 @@ def list_cases(
     for model in models[:limit]:
         result.append(model.model_dump_json_for_ai())
     return result
+
+
+def get_case_discussions(
+        case_id: Annotated[str, "Case ID, e.g. case_000005"]
+) -> Annotated[Optional[list[str]], "Case discussions as JSON list, or None if case not found"]:
+    """Get case discussions by case ID."""
+    discussions = Case.get_discussions(case_id)
+    if discussions is None:
+        return None
+    return [json.dumps(item, ensure_ascii=False) for item in discussions]
 
 
 def update_case(
@@ -140,49 +144,6 @@ def get_alert_discussions(
     return [json.dumps(item, ensure_ascii=False) for item in discussions]
 
 
-def get_artifact(
-        artifact_id: Annotated[str, "Artifact ID, e.g. artifact_000001"]
-) -> Annotated[Optional[str], "Artifact as AI-friendly JSON, or None if not found"]:
-    """Get one artifact by ID."""
-    model = Artifact.get_by_id(artifact_id, lazy_load=False)
-    if not model:
-        return None
-    return model.model_dump_json_for_ai()
-
-
-def list_artifacts(
-        artifact_id: Annotated[str, "Artifact ID, e.g. artifact_000001"] = None,
-        type: Annotated[Optional[list[ArtifactType]], "Artifact type filter"] = None,
-        role: Annotated[Optional[list[ArtifactRole]], "Artifact role filter"] = None,
-        reputation_score: Annotated[Optional[list[ArtifactReputationScore]], "Artifact reputation filter"] = None,
-        owner: Annotated[Optional[str], "Artifact owner filter"] = None,
-        value: Annotated[Optional[str], "Exact artifact value filter"] = None,
-        limit: Annotated[int, "Max artifacts to return"] = 10
-) -> Annotated[list[str], "Matching artifacts as AI-friendly JSON list"]:
-    """List artifacts with optional filters."""
-    conditions = []
-    if artifact_id:
-        conditions.append(Condition(field="id", operator=Operator.EQ, value=artifact_id))
-    if type:
-        conditions.append(Condition(field="type", operator=Operator.IN, value=type))
-    if role:
-        conditions.append(Condition(field="role", operator=Operator.IN, value=role))
-    if reputation_score:
-        conditions.append(Condition(field="reputation_score", operator=Operator.IN, value=reputation_score))
-    if owner:
-        conditions.append(Condition(field="owner", operator=Operator.EQ, value=owner))
-    if value:
-        conditions.append(Condition(field="value", operator=Operator.EQ, value=value))
-
-    filter_model = Group(logic="AND", children=conditions) if conditions else Group(logic="AND", children=[])
-
-    models = Artifact.list(filter_model, lazy_load=True)
-    result = []
-    for model in models[:limit]:
-        result.append(model.model_dump_json_for_ai())
-    return result
-
-
 def update_alert(
         alert_id: Annotated[str, "Alert ID to update"],
         severity_ai: Annotated[Optional[Severity], "Updated AI-assessed severity"] = None,
@@ -221,8 +182,41 @@ def append_artifact(
     )
 
 
+def list_artifacts(
+        artifact_id: Annotated[str, "Artifact ID, e.g. artifact_000001"] = None,
+        type: Annotated[Optional[list[ArtifactType]], "Artifact type filter"] = None,
+        role: Annotated[Optional[list[ArtifactRole]], "Artifact role filter"] = None,
+        reputation_score: Annotated[Optional[list[ArtifactReputationScore]], "Artifact reputation filter"] = None,
+        owner: Annotated[Optional[str], "Artifact owner filter"] = None,
+        value: Annotated[Optional[str], "Exact artifact value filter"] = None,
+        limit: Annotated[int, "Max artifacts to return"] = 10
+) -> Annotated[list[str], "Matching artifacts as AI-friendly JSON list"]:
+    """List artifacts with optional filters."""
+    conditions = []
+    if artifact_id:
+        conditions.append(Condition(field="id", operator=Operator.EQ, value=artifact_id))
+    if type:
+        conditions.append(Condition(field="type", operator=Operator.IN, value=type))
+    if role:
+        conditions.append(Condition(field="role", operator=Operator.IN, value=role))
+    if reputation_score:
+        conditions.append(Condition(field="reputation_score", operator=Operator.IN, value=reputation_score))
+    if owner:
+        conditions.append(Condition(field="owner", operator=Operator.EQ, value=owner))
+    if value:
+        conditions.append(Condition(field="value", operator=Operator.EQ, value=value))
+
+    filter_model = Group(logic="AND", children=conditions) if conditions else Group(logic="AND", children=[])
+
+    models = Artifact.list(filter_model, lazy_load=True)
+    result = []
+    for model in models[:limit]:
+        result.append(model.model_dump_json_for_ai())
+    return result
+
+
 def append_enrichment(
-        target_type: Annotated[str, "Target object type: case, alert, or artifact"],
+        target_type: Annotated[str, "Target object type: CASE, ALERT, or ARTIFACT"],
         target_id: Annotated[str, "Target object ID"],
         name: Annotated[str, "Enrichment name"] = "",
         type: Annotated[str, "Enrichment type"] = "Other",
@@ -235,7 +229,7 @@ def append_enrichment(
     """Create one enrichment and attach it to an existing case, alert, or artifact."""
     normalized_target_type = target_type.strip().lower()
 
-    if normalized_target_type == "case":
+    if normalized_target_type == "CASE":
         return Case.append_enrichment(
             case_id=target_id,
             name=name,
@@ -247,7 +241,7 @@ def append_enrichment(
             data=data
         )
 
-    if normalized_target_type == "alert":
+    if normalized_target_type == "ALERT":
         return Alert.append_enrichment(
             alert_id=target_id,
             name=name,
@@ -259,7 +253,7 @@ def append_enrichment(
             data=data
         )
 
-    if normalized_target_type == "artifact":
+    if normalized_target_type == "ARTIFACT":
         return Artifact.append_enrichment(
             artifact_id=target_id,
             name=name,
@@ -293,25 +287,6 @@ def create_ticket(
     )
 
 
-def update_ticket(
-        ticket_id: Annotated[str, "Ticket ID to update"],
-        uid: Annotated[Optional[str], "Updated external ticket ID"] = None,
-        title: Annotated[Optional[str], "Updated ticket title"] = None,
-        status: Annotated[Optional[TicketStatus], "Updated external ticket status"] = None,
-        type: Annotated[Optional[TicketType], "Updated external ticket type"] = None,
-        src_url: Annotated[Optional[str], "Updated external ticket URL"] = None
-) -> Annotated[Optional[str], "Updated ticket row ID, or None if not found"]:
-    """Update one synced external ticket record in SIRP."""
-    return Ticket.update_from_sync(
-        ticket_id=ticket_id,
-        uid=uid,
-        title=title,
-        status=status,
-        type=type,
-        src_url=src_url
-    )
-
-
 def list_tickets(
         status: Annotated[Optional[list[TicketStatus]], "Ticket status filter"] = None,
         type: Annotated[Optional[list[TicketType]], "Ticket type filter"] = None,
@@ -337,15 +312,40 @@ def list_tickets(
     return result
 
 
-def list_playbooks(
-        playbook_id: Annotated[str, "Playbook ID, e.g. playbook_000001"],
+def update_ticket(
+        ticket_id: Annotated[str, "Ticket ID to update"],
+        uid: Annotated[Optional[str], "Updated external ticket ID"] = None,
+        title: Annotated[Optional[str], "Updated ticket title"] = None,
+        status: Annotated[Optional[TicketStatus], "Updated external ticket status"] = None,
+        type: Annotated[Optional[TicketType], "Updated external ticket type"] = None,
+        src_url: Annotated[Optional[str], "Updated external ticket URL"] = None
+) -> Annotated[Optional[str], "Updated ticket row ID, or None if not found"]:
+    """Update one synced external ticket record in SIRP."""
+    return Ticket.update_from_sync(
+        ticket_id=ticket_id,
+        uid=uid,
+        title=title,
+        status=status,
+        type=type,
+        src_url=src_url
+    )
+
+
+def list_available_playbook_definitions(
+) -> Annotated[str, "Runnable playbook definitions as JSON string, not playbook run records"]:
+    """List all runnable built-in playbook definitions, not playbook run records."""
+    result = PlaybookLoader.list_playbook_config()
+    return json.dumps(result, ensure_ascii=False)
+
+
+def list_playbook_runs(
+        playbook_id: Annotated[Optional[str], "Playbook run ID, e.g. playbook_000001"] = None,
         job_status: Annotated[Optional[list[PlaybookJobStatus]], "Playbook job status filter"] = None,
         type: Annotated[Optional[list[PlaybookType]], "Playbook type filter"] = None,
-        source_id: Annotated[Optional[str], "Playbook source record ID filter  e.g. case_00000_1,alert_000001,artifact_000001"] = None,
-        source_rowid: Annotated[Optional[str], "Source row ID filter"] = None,
+        source_id: Annotated[Optional[str], "Playbook target record ID filter, e.g. case_000001, alert_000001, artifact_000001"] = None,
         limit: Annotated[int, "Max playbooks to return"] = 10
-) -> Annotated[list[str], "Matching playbooks as AI-friendly JSON list"]:
-    """List playbook runs with optional filters."""
+) -> Annotated[list[str], "Matching playbook run records as AI-friendly JSON list"]:
+    """List playbook run records with optional filters."""
     conditions = []
 
     if playbook_id:
@@ -356,8 +356,6 @@ def list_playbooks(
         conditions.append(Condition(field="job_status", operator=Operator.IN, value=job_status))
     if type:
         conditions.append(Condition(field="type", operator=Operator.IN, value=type))
-    if source_rowid:
-        conditions.append(Condition(field="source_rowid", operator=Operator.EQ, value=source_rowid))
 
     filter_model = Group(logic="AND", children=conditions) if conditions else Group(logic="AND", children=[])
 
@@ -366,6 +364,22 @@ def list_playbooks(
     for model in models[:limit]:
         result.append(model.model_dump_json_for_ai())
     return result
+
+
+def execute_playbook(
+        type: Annotated[PlaybookType, "Target object type for the created playbook run: CASE, ALERT, or ARTIFACT"],
+        name: Annotated[str, "Runnable playbook definition name from list_available_playbook_definitions, not a playbook run ID"],
+        record_id: Annotated[str, "Target record ID, e.g. case_000001, alert_000001, artifact_000001"],
+        user_input: Annotated[Optional[str], "Optional extra natural-language input for this playbook run"] = None
+) -> Annotated[str, "Created pending playbook run record as AI-friendly JSON string"]:
+    """Create one pending playbook run record from a runnable playbook definition."""
+    result = Playbook.add_pending_playbook(
+        type=type,
+        name=name,
+        user_input=user_input,
+        record_id=record_id
+    )
+    return result.model_dump_json_for_ai()
 
 
 def list_knowledge(
