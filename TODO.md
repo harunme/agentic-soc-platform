@@ -15,13 +15,6 @@
 
 ## 2. 高优先级
 
-### 2.1 Playbook
-
-1. 增加 Playbook 配置列表查询接口，直接使用 `PlaybookLoader.list_playbook_config()`，返回完整列表，不区分目标对象
-2. 增加 Playbook 执行接口，直接使用 `Playbook.add_pending_playbook()` 创建 pending 记录，由其他逻辑继续处理
-3. 为 Playbook 增加 `get_by_id()`，用于查询某次执行的状态与消息
-4. 在 Playbook 执行接口中支持传入 `user_input`，作为用户对当前 Playbook 的附加自然语言要求，由 Playbook 内部决定是否加入 prompt
-
 ### 2.2 Artifact
 
 1. 基于 Artifact 的内部资产查询
@@ -43,20 +36,25 @@
 
 ### 3.1 接口模型统一化
 
-1. `list_available_playbooks(target_type, target_id)`
-2. `run_playbook(target_type, target_id, playbook_name, user_input)`
-3. `get_playbook_run(job_id)`
-4. `list_playbook_runs(target_type, target_id, job_status)`
-5. 继续统一 `target_type + target_id` 风格的 MCP 接口设计
+1. 继续统一 MCP 列表接口的公共参数与返回风格
+2. 收口 `list_*` 类接口中的重复过滤与序列化逻辑
+3. 继续统一 `target_type + target_id` 风格的 MCP 接口设计
+4. 明确对象 ID、运行记录 ID、定义名三类标识的命名边界
 
-### 3.2 Knowledge
+### 3.2 Playbook
+
+1. 对 `execute_playbook` 增加 definition 名称校验或友好错误返回
+2. 视需要增加按对象视角查询 playbook run 的更清晰别名接口
+3. 评估是否需要为 playbook run 增加独立详情接口，而不是仅依赖 `list_playbook_runs`
+
+### 3.3 Knowledge
 
 1. 语义搜索接口
 2. 按标签或场景批量检索
 3. 将 Playbook/Agent 输出结果直接写入 Knowledge
 4. 更清晰的知识生命周期，例如 `STORE`、`REMOVE`、`ACTIVE`、`EXPIRED`
 
-### 3.3 结果沉淀方式
+### 3.4 结果沉淀方式
 
 1. 原始字段保留源事实
 2. Enrichment 承载扩展结果
@@ -108,3 +106,4 @@
 2. MCP 层尽量保持为参数 schema、对象路由、结果包装
 3. 新能力优先围绕真实对象关系建模，不在 MCP 层虚构关系
 4. 优先强化 Artifact、Enrichment、Knowledge、Playbook 之间的联动
+5. 优先消除 MCP 接口命名歧义，尤其区分 definition、run、record、target object

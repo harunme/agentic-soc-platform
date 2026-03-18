@@ -11,11 +11,17 @@ from PLUGINS.SIRP.sirpmodel import ArtifactReputationScore, ArtifactRole, Artifa
     AttackStage, KnowledgeAction, KnowledgeSource, PlaybookJobStatus, PlaybookType, TicketStatus, TicketType
 
 
+def _build_filter_group(conditions: list[Condition]) -> Group:
+    return Group(logic="AND", children=conditions or [])
+
+
+def _dump_models_for_ai(models, limit: int) -> list[str]:
+    return [model.model_dump_json_for_ai() for model in models[:limit]]
+
+
 # Case
-
-
 def list_cases(
-        case_id: Annotated[str, "Case ID, e.g. case_000005"] = None,
+    case_id: Annotated[Optional[str], "Case ID, e.g. case_000005"] = None,
         status: Annotated[Optional[list[CaseStatus]], "Case status filter"] = None,
         severity: Annotated[Optional[list[Severity]], "Case severity filter"] = None,
         confidence: Annotated[Optional[list[Confidence]], "Case confidence filter"] = None,
@@ -44,13 +50,9 @@ def list_cases(
     if tags:
         conditions.append(Condition(field="tags", operator=Operator.CONTAINS, value=tags))
 
-    filter_model = Group(logic="AND", children=conditions) if conditions else Group(logic="AND", children=[])
-
+    filter_model = _build_filter_group(conditions)
     models = Case.list(filter_model, lazy_load=True)
-    result = []
-    for model in models[:limit]:
-        result.append(model.model_dump_json_for_ai())
-    return result
+    return _dump_models_for_ai(models, limit)
 
 
 def get_case_discussions(
@@ -103,8 +105,9 @@ def update_case(
     return Case.update(case_new)
 
 
+# Alert
 def list_alerts(
-        alert_id: Annotated[str, "Alert ID, e.g. alert_000001"] = None,
+    alert_id: Annotated[Optional[str], "Alert ID, e.g. alert_000001"] = None,
         status: Annotated[Optional[list[AlertStatus]], "Alert status filter"] = None,
         severity: Annotated[Optional[list[Severity]], "Alert severity filter"] = None,
         confidence: Annotated[Optional[list[Confidence]], "Alert confidence filter"] = None,
@@ -125,13 +128,9 @@ def list_alerts(
     if correlation_uid:
         conditions.append(Condition(field="correlation_uid", operator=Operator.EQ, value=correlation_uid))
 
-    filter_model = Group(logic="AND", children=conditions) if conditions else Group(logic="AND", children=[])
-
+    filter_model = _build_filter_group(conditions)
     models = Alert.list(filter_model, lazy_load=True)
-    result = []
-    for model in models[:limit]:
-        result.append(model.model_dump_json_for_ai())
-    return result
+    return _dump_models_for_ai(models, limit)
 
 
 def get_alert_discussions(
@@ -159,6 +158,8 @@ def update_alert(
     )
 
 
+# Artifact
+
 def append_artifact(
         alert_id: Annotated[str, "Target alert ID to append the artifact to"],
         name: Annotated[str, "Artifact name"] = "",
@@ -183,7 +184,7 @@ def append_artifact(
 
 
 def list_artifacts(
-        artifact_id: Annotated[str, "Artifact ID, e.g. artifact_000001"] = None,
+    artifact_id: Annotated[Optional[str], "Artifact ID, e.g. artifact_000001"] = None,
         type: Annotated[Optional[list[ArtifactType]], "Artifact type filter"] = None,
         role: Annotated[Optional[list[ArtifactRole]], "Artifact role filter"] = None,
         reputation_score: Annotated[Optional[list[ArtifactReputationScore]], "Artifact reputation filter"] = None,
@@ -206,15 +207,12 @@ def list_artifacts(
     if value:
         conditions.append(Condition(field="value", operator=Operator.EQ, value=value))
 
-    filter_model = Group(logic="AND", children=conditions) if conditions else Group(logic="AND", children=[])
-
+    filter_model = _build_filter_group(conditions)
     models = Artifact.list(filter_model, lazy_load=True)
-    result = []
-    for model in models[:limit]:
-        result.append(model.model_dump_json_for_ai())
-    return result
+    return _dump_models_for_ai(models, limit)
 
 
+# Enrichment
 def append_enrichment(
         target_type: Annotated[str, "Target object type: CASE, ALERT, or ARTIFACT"],
         target_id: Annotated[str, "Target object ID"],
@@ -229,7 +227,7 @@ def append_enrichment(
     """Create one enrichment and attach it to an existing case, alert, or artifact."""
     normalized_target_type = target_type.strip().lower()
 
-    if normalized_target_type == "CASE":
+    if normalized_target_type == "case":
         return Case.append_enrichment(
             case_id=target_id,
             name=name,
@@ -241,7 +239,7 @@ def append_enrichment(
             data=data
         )
 
-    if normalized_target_type == "ALERT":
+    if normalized_target_type == "alert":
         return Alert.append_enrichment(
             alert_id=target_id,
             name=name,
@@ -253,7 +251,7 @@ def append_enrichment(
             data=data
         )
 
-    if normalized_target_type == "ARTIFACT":
+    if normalized_target_type == "artifact":
         return Artifact.append_enrichment(
             artifact_id=target_id,
             name=name,
@@ -268,6 +266,7 @@ def append_enrichment(
     raise ValueError("target_type must be one of: case, alert, artifact")
 
 
+# Ticket
 def create_ticket(
         uid: Annotated[str, "External ticket ID to sync into SIRP"],
         title: Annotated[str, "Ticket title"] = "",
@@ -303,13 +302,9 @@ def list_tickets(
     if uid:
         conditions.append(Condition(field="uid", operator=Operator.EQ, value=uid))
 
-    filter_model = Group(logic="AND", children=conditions) if conditions else Group(logic="AND", children=[])
-
+    filter_model = _build_filter_group(conditions)
     models = Ticket.list(filter_model, lazy_load=True)
-    result = []
-    for model in models[:limit]:
-        result.append(model.model_dump_json_for_ai())
-    return result
+    return _dump_models_for_ai(models, limit)
 
 
 def update_ticket(
@@ -331,6 +326,7 @@ def update_ticket(
     )
 
 
+# Playbook
 def list_available_playbook_definitions(
 ) -> Annotated[str, "Runnable playbook definitions as JSON string, not playbook run records"]:
     """List all runnable built-in playbook definitions, not playbook run records."""
@@ -343,7 +339,7 @@ def list_playbook_runs(
         job_status: Annotated[Optional[list[PlaybookJobStatus]], "Playbook job status filter"] = None,
         type: Annotated[Optional[list[PlaybookType]], "Playbook type filter"] = None,
         source_id: Annotated[Optional[str], "Playbook target record ID filter, e.g. case_000001, alert_000001, artifact_000001"] = None,
-        limit: Annotated[int, "Max playbooks to return"] = 10
+        limit: Annotated[int, "Max playbook runs to return"] = 10
 ) -> Annotated[list[str], "Matching playbook run records as AI-friendly JSON list"]:
     """List playbook run records with optional filters."""
     conditions = []
@@ -357,13 +353,9 @@ def list_playbook_runs(
     if type:
         conditions.append(Condition(field="type", operator=Operator.IN, value=type))
 
-    filter_model = Group(logic="AND", children=conditions) if conditions else Group(logic="AND", children=[])
-
+    filter_model = _build_filter_group(conditions)
     models = Playbook.list(filter_model, lazy_load=True)
-    result = []
-    for model in models[:limit]:
-        result.append(model.model_dump_json_for_ai())
-    return result
+    return _dump_models_for_ai(models, limit)
 
 
 def execute_playbook(
@@ -407,13 +399,9 @@ def list_knowledge(
     if tags:
         conditions.append(Condition(field="tags", operator=Operator.CONTAINS, value=tags))
 
-    filter_model = Group(logic="AND", children=conditions) if conditions else Group(logic="AND", children=[])
-
+    filter_model = _build_filter_group(conditions)
     models = Knowledge.list(filter_model, lazy_load=True)
-    result = []
-    for model in models[:limit]:
-        result.append(model.model_dump_json_for_ai())
-    return result
+    return _dump_models_for_ai(models, limit)
 
 
 def update_knowledge(
