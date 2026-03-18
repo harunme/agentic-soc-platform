@@ -48,11 +48,11 @@ ASP processes security alerts and incidents through a simplified multi-stage pro
 2. **Webhook Forwarder**: The SIEM forwards these alerts via Webhook to the ASP's built-in Webhook receiver.
 3. **Redis Stream**: The receiver pushes the alerts to the corresponding Redis Stream, serving as a persistent message
    queue. Each alert type has its own stream.
-4. **Module Engine**: ASP **modules** consume alerts from their designated streams, perform analysis (often using AI
+4. **Module ModuleEngine**: ASP **modules** consume alerts from their designated streams, perform analysis (often using AI
    Agents), enrich data, and determine outcomes.
 5. **SIRP Platform**: The output of the modules (now formatted into standardized security records) is sent to the **SIRP
    ** platform, where cases, alerts, and artifacts are created or updated.
-6. **PlaybookLoader Engine**: Analysts can trigger **playbooks** from the SIRP user interface against cases, alerts, or
+6. **PlaybookLoader ModuleEngine**: Analysts can trigger **playbooks** from the SIRP user interface against cases, alerts, or
    artifacts to perform further automated actions, such as threat intelligence enrichment or remediation.
 
 ![img_1.webp](Docker/IMG/img_20.png)

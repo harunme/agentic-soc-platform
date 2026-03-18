@@ -9,7 +9,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from django.contrib.auth.models import User
 
 from Lib.baseplaybook import BasePlaybook
-from Lib.engine import Engine
+from Lib.moduleengine import ModuleEngine
 from Lib.log import logger
 from Lib.playbookloader import PlaybookLoader
 from Lib.threadmodulemanager import thread_module_manager
@@ -31,7 +31,7 @@ class MainMonitor(object):
     _background_threads = {}
 
     def __init__(self):
-        self.engine = Engine()
+        self.engine = ModuleEngine()
         self.redis_stream_api = RedisStreamAPI()
         self.MainScheduler = BackgroundScheduler(timezone='Asia/Shanghai')
 

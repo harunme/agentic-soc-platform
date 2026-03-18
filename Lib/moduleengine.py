@@ -6,7 +6,7 @@ import time
 from Lib.log import logger
 
 
-class Engine:
+class ModuleEngine:
     def __init__(self):
         self.modules = {}
         self.modules_dir = "MODULES"
@@ -15,12 +15,7 @@ class Engine:
 
         self._load_initial_modules()
 
-        logger.info("Engine started successfully, beginning module monitoring")
-
-    def stop(self):
-        for module_name in list(self.modules.keys()):
-            self.unload_module(module_name)
-        logger.info("All modules have been stopped")
+        logger.info("ModuleEngine started successfully, beginning module monitoring")
 
     def _load_initial_modules(self):
         load_module_count = 0
@@ -71,16 +66,3 @@ class Engine:
 
         except Exception as e:
             logger.error(f"Failed to load module: {e}")
-
-    def unload_module(self, module_name: str):
-        if module_name not in self.modules:
-            return
-
-        logger.info(f"Unloading module: {module_name}")
-        del self.modules[module_name]
-        logger.info(f"Module '{module_name}' unloaded successfully")
-
-    def reload_module(self, module_name: str, file_path: str):
-        logger.info(f"Reloading module: {module_name}")
-        self.unload_module(module_name)
-        self.load_module(module_name, file_path)
