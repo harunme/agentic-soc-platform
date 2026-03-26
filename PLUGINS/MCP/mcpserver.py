@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     mcp.settings.host = host
     mcp.settings.port = port
-
+    mcp.settings.transport_security = None
     # add tools
     from PLUGINS.MCP.llmfunc import (
         attach_artifact_to_alert,
