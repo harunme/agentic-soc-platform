@@ -5,10 +5,6 @@ from langchain_core.documents import Document
 
 from Lib.log import logger
 from PLUGINS.Embeddings.embeddings_qdrant import embedding_api_singleton_qdrant, SIRP_KNOWLEDGE_COLLECTION
-from PLUGINS.Mem0.CONFIG import USE as MEM_ZERO_USE
-
-if MEM_ZERO_USE:
-    from PLUGINS.Mem0.mem_zero import mem_zero_singleton
 
 
 class AgentKnowledge(object):
@@ -31,19 +27,6 @@ class AgentKnowledge(object):
             doc: Document
             if doc.metadata["rerank_score"] >= threshold:
                 result_all.append(doc.page_content)
-
-        if MEM_ZERO_USE:
-            result = mem_zero_singleton.search_mem(user_id=SIRP_KNOWLEDGE_COLLECTION, query=query, limit=3)
-            results = result.get("results", [])
-            relations = result.get("relations", [])
-            logger.debug(results)
-            logger.debug(relations)
-            for one_record in results:
-                id = one_record.get("id")
-                rerank_score = one_record.get("rerank_score", 0)
-                memory = one_record.get("memory", "")
-                if rerank_score >= threshold:
-                    result_all.append(memory)
 
         results = json.dumps(result_all, ensure_ascii=False)
         logger.debug(f"Knowledge search results : {results}")

@@ -6,24 +6,17 @@ import time
 from typing import Callable
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from django.contrib.auth.models import User
 
 from Lib.baseplaybook import BasePlaybook
-from Lib.moduleengine import ModuleEngine
 from Lib.log import logger
+from Lib.moduleengine import ModuleEngine
 from Lib.playbookloader import PlaybookLoader
 from Lib.threadmodulemanager import thread_module_manager
 from Lib.xcache import Xcache
 from PLUGINS.Embeddings.embeddings_qdrant import embedding_api_singleton_qdrant, SIRP_KNOWLEDGE_COLLECTION
-from PLUGINS.Mem0.CONFIG import USE as MEM_ZERO_USE
 from PLUGINS.Redis.redis_stream_api import RedisStreamAPI
 from PLUGINS.SIRP.sirpapi import Playbook, Knowledge
 from PLUGINS.SIRP.sirpmodel import PlaybookJobStatus, KnowledgeAction, PlaybookModel
-
-if MEM_ZERO_USE:
-    from PLUGINS.Mem0.mem_zero import mem_zero_singleton
-
-ASP_REST_API_TOKEN = "nocoly_token_for_playbook"
 
 
 class MainMonitor(object):
@@ -82,15 +75,6 @@ class MainMonitor(object):
 
     def start(self):
         logger.info("Starting background services...")
-
-        # add api user
-        logger.info("Write ASP_TOKEN to cache")
-        api_usr = User()
-        api_usr.username = "api_token"
-        api_usr.is_active = True
-
-        Xcache.set_token_user(ASP_REST_API_TOKEN, api_usr, None)
-
         logger.info("Load PlaybookLoader module config")
         PlaybookLoader.load_all_playbook_config()
 
@@ -159,13 +143,6 @@ class MainMonitor(object):
                     except Exception as E:
                         logger.exception(E)
 
-                    try:
-                        if MEM_ZERO_USE:
-                            result = mem_zero_singleton.add_mem(user_id=SIRP_KNOWLEDGE_COLLECTION, run_id=model.rowid, content=payload_content,
-                                                                metadata={"rowid": model.rowid})
-                    except Exception as E:
-                        logger.exception(E)
-
                     model.action = KnowledgeAction.DONE
                     model.using = True
                     logger.info(f"Knowledge stored,rowid: {model.rowid}")
@@ -173,12 +150,6 @@ class MainMonitor(object):
                     logger.info(f"Knowledge removing,rowid: {model.rowid}")
                     try:
                         result = embedding_api_singleton_qdrant.delete_document(SIRP_KNOWLEDGE_COLLECTION, model.rowid)
-                    except Exception as E:
-                        logger.exception(E)
-
-                    try:
-                        if MEM_ZERO_USE:
-                            result = mem_zero_singleton.delete_mem(user_id=SIRP_KNOWLEDGE_COLLECTION, run_id=model.rowid)
                     except Exception as E:
                         logger.exception(E)
 
