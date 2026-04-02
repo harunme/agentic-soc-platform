@@ -16,7 +16,7 @@ def _build_filter_group(conditions: list[Condition]) -> Group:
     return Group(logic="AND", children=conditions or [])
 
 
-def _dump_models_for_ai(models, limit: int) -> list[str]:
+def _dump_models_for_ai(models, limit: int) -> list[dict]:
     return [model.model_dump_for_ai() for model in models[:limit]]
 
 
@@ -31,9 +31,9 @@ def list_cases(
         correlation_uid: Annotated[Optional[str], "Case correlation UID filter"] = None,
         title: Annotated[Optional[str], "Fuzzy case title filter"] = None,
         tags: Annotated[Optional[list[str]], "Case tag filter"] = None,
-        lazy_load: Annotated[bool, "True means do not load attached related data"] = False,
+        lazy_load: Annotated[bool, "True means do not load attached related data"] = True,
         limit: Annotated[int, "Max cases to return"] = 10
-) -> Annotated[list[str], "Matching cases as AI-friendly JSON list"]:
+) -> Annotated[list[dict], "Matching cases as AI-friendly JSON list"]:
     """List cases with optional filters."""
     conditions = []
     if rowid:
@@ -101,9 +101,9 @@ def list_alerts(
         severity: Annotated[Optional[list[Severity]], "Alert severity filter"] = None,
         confidence: Annotated[Optional[list[Confidence]], "Alert confidence filter"] = None,
         correlation_uid: Annotated[Optional[str], "Alert correlation UID filter"] = None,
-        lazy_load: Annotated[bool, "True means do not load attached related data"] = False,
+        lazy_load: Annotated[bool, "True means do not load attached related data"] = True,
         limit: Annotated[int, "Max alerts to return"] = 10
-) -> Annotated[list[str], "Matching alerts as AI-friendly JSON list"]:
+) -> Annotated[list[dict], "Matching alerts as AI-friendly JSON list"]:
     """List alerts with optional filters."""
     conditions = []
 
@@ -195,7 +195,7 @@ def list_artifacts(
         value: Annotated[Optional[str], "Exact artifact value filter"] = None,
         lazy_load: Annotated[bool, "True means do not load attached related data"] = True,
         limit: Annotated[int, "Max artifacts to return"] = 10
-) -> Annotated[list[str], "Matching artifacts as AI-friendly JSON list"]:
+) -> Annotated[list[dict], "Matching artifacts as AI-friendly JSON list"]:
     """List artifacts with optional filters."""
     conditions = []
     if rowid:
@@ -303,7 +303,7 @@ def list_tickets(
         type: Annotated[Optional[list[TicketType]], "Ticket type filter"] = None,
         uid: Annotated[Optional[str], "Exact external ticket ID filter"] = None,
         limit: Annotated[int, "Max tickets to return"] = 10
-) -> Annotated[list[str], "Matching tickets as AI-friendly JSON list"]:
+) -> Annotated[list[dict], "Matching tickets as AI-friendly JSON list"]:
     """List synced external tickets with optional filters."""
     conditions = []
 
@@ -355,7 +355,7 @@ def list_playbook_runs(
         type: Annotated[Optional[list[PlaybookType]], "Playbook type filter"] = None,
         source_id: Annotated[Optional[str], "Playbook target record ID filter, e.g. case_000001, alert_000001, artifact_000001"] = None,
         limit: Annotated[int, "Max playbook runs to return"] = 10
-) -> Annotated[list[str], "Matching playbook run records as AI-friendly JSON list"]:
+) -> Annotated[list[dict], "Matching playbook run records as AI-friendly JSON list"]:
     """List playbook run records with optional filters."""
     conditions = []
 
@@ -400,7 +400,7 @@ def list_knowledge(
         body: Annotated[Optional[str], "Fuzzy knowledge body filter"] = None,
         tags: Annotated[Optional[list[str]], "Knowledge tag filter"] = None,
         limit: Annotated[int, "Max knowledge records to return"] = 10
-) -> Annotated[list[str], "Matching knowledge records as AI-friendly JSON list"]:
+) -> Annotated[list[dict], "Matching knowledge records as AI-friendly JSON list"]:
     """List knowledge records with optional filters."""
     conditions = []
 

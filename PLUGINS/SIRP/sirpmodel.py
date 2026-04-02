@@ -610,7 +610,7 @@ class ArtifactModel(BaseSystemModel):
     reputation_provider: Optional[str] = Field(default="", description="Threat intel provider", json_schema_extra={"type": 2})
     reputation_score: Optional[ArtifactReputationScore] = Field(
         default=None, description="Artifact reputation")
-    
+
     # 反向关联
     alert: Optional[List[Union[AlertModel, str]]] = Field(default=None, description="Linked alert rowid")
 
