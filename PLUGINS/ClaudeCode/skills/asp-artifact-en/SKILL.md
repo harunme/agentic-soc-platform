@@ -21,7 +21,7 @@ Use this skill for artifact-centric investigation work on ASP.
 - The user wants to find artifacts by value, type, role, owner, or reputation.
 - The user wants to create a new artifact record.
 - The user wants to attach a newly created artifact to an alert.
-- The user wants to attach an existing artifact to an alert when they already have the artifact row ID.
+- The user wants to attach an existing artifact to an alert when they already have the artifact rowid.
 - The user wants to attach enrichment or structured analysis to an artifact.
 
 ## Operating Rules
@@ -31,7 +31,7 @@ Use this skill for artifact-centric investigation work on ASP.
 - Collect only missing required inputs.
 - Use `list_artifacts` for lookup and review.
 - Use `create_artifact` when the user wants to add a new artifact record.
-- Use `attach_artifact_to_alert` only after you already have an artifact row ID.
+- Use `attach_artifact_to_alert` only after you already have an artifact rowid.
 - Use `create_enrichment` plus `attach_enrichment_to_target` when the user wants to save analysis on the artifact
   itself.
 - For detailed enrichment persistence workflow, use the `asp-enrichment-en` skill.
@@ -42,7 +42,7 @@ Use this skill for artifact-centric investigation work on ASP.
 1. If the user asks to find or review artifacts, call `list_artifacts`.
 2. If the user asks to create a new artifact, call `create_artifact`.
 3. If the user asks to add an artifact to an alert, first call `create_artifact` when needed or retrieve an existing
-   artifact row ID, then call `attach_artifact_to_alert`.
+   artifact rowid, then call `attach_artifact_to_alert`.
 4. If the user asks to attach intel, analyst notes, or structured analysis to an artifact, use the `asp-enrichment-en`
    skill.
 5. If the user is investigating from an artifact, use the artifact as a pivot and suggest the next useful hop only when
@@ -55,7 +55,7 @@ Use this skill for artifact-centric investigation work on ASP.
 1. Extract the narrowest useful filters from the request.
 2. Call `list_artifacts`.
 3. Parse the returned JSON strings.
-4. Present a compact artifact-oriented view, and surface the artifact row ID when the user is likely to attach or reuse
+4. Present a compact artifact-oriented view, and surface the artifact rowid when the user is likely to attach or reuse
    the artifact next.
 
 Preferred response structure:
@@ -69,19 +69,19 @@ Then add one short interpretation line when useful.
 
 1. Collect the minimum useful artifact information.
 2. Call `create_artifact`.
-3. Confirm the created artifact row ID.
+3. Confirm the created artifact rowid.
 4. If the artifact should belong to an alert, suggest attaching it next.
 
 Preferred response structure:
 
-- `Artifact`: created artifact row ID
+- `Artifact`: created artifact rowid
 - `Value`: the main artifact value when useful
 - `Next useful step`: optional, usually attach it to an alert or enrich it
 
 ### Attach Artifact To Alert
 
 1. Require `alert_id`.
-2. If the user does not already have an artifact row ID, either call `create_artifact` for a new artifact or retrieve
+2. If the user does not already have an artifact rowid, either call `create_artifact` for a new artifact or retrieve
    the existing artifact first.
 3. Call `attach_artifact_to_alert(alert_id=<alert_id>, artifact_rowid=<artifact_rowid>)`.
 4. Confirm that the artifact is attached.

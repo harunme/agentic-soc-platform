@@ -35,7 +35,7 @@ Use this skill for alert-centric SOC work on ASP.
 - For updates, change only the fields the user explicitly requested.
 - For append actions, confirm the target alert ID and the minimum required payload before writing.
 - For attachment flows, distinguish between creating a new related record and reusing an existing one. Attach tools need
-  the related record row ID.
+  the related record rowid.
 - If the user wants to save structured analysis back onto the alert, use the `asp-enrichment-en` skill.
 
 ## Decision Flow
@@ -46,7 +46,7 @@ Use this skill for alert-centric SOC work on ASP.
 3. If the user asks to browse or compare alerts, call `list_alerts` with supported filters.
 4. If the user asks to update AI severity, AI confidence, or AI comment, call `update_alert`.
 5. If the user asks to add an IOC, host, user, URL, or hash to the alert, first call `create_artifact` for a new
-   artifact or locate an existing artifact row ID, then call
+   artifact or locate an existing artifact rowid, then call
    `attach_artifact_to_alert(alert_id=<alert_id>, artifact_rowid=<artifact_rowid>)`.
 6. If the user asks to attach analysis results, intel, or structured context to the alert, use the `asp-enrichment-en`
    skill.
@@ -97,8 +97,8 @@ Then add one short interpretation line when useful.
 1. Require `alert_id`.
 2. If the user wants a new artifact, collect the smallest useful artifact payload first: usually `value`, and when
    possible `name`, `type`, or `role`.
-3. For a new artifact, call `create_artifact` and keep the returned artifact row ID.
-4. For an existing artifact, first retrieve it and keep the returned artifact row ID.
+3. For a new artifact, call `create_artifact` and keep the returned artifact rowid.
+4. For an existing artifact, first retrieve it and keep the returned artifact rowid.
 5. Call `attach_artifact_to_alert(alert_id=<alert_id>, artifact_rowid=<artifact_rowid>)`.
 6. Confirm that the artifact is attached.
 7. If the artifact is likely to need context, suggest creating enrichment for the artifact or the alert next.

@@ -130,14 +130,14 @@ Preferred response structure:
 
 1. Require `case_id`.
 2. Collect the external ticket details the user wants to sync.
-3. Call `create_ticket` and keep the returned ticket row ID.
+3. Call `create_ticket` and keep the returned ticket rowid.
 4. Call `attach_ticket_to_case(case_id=<case_id>, ticket_rowid=<created_rowid>)`.
 5. Confirm that the ticket was created and attached to the case.
 
 Preferred response structure:
 
 - `Case`: case ID
-- `Ticket`: created ticket row ID or external ticket identifier when useful
+- `Ticket`: created ticket rowid or external ticket identifier when useful
 - `Attachment`: attached to case
 - `Next useful step`: optional, usually to review the case again or update the synced ticket later
 
@@ -164,7 +164,7 @@ Good update targets:
 
 Preferred response structure:
 
-- `Updated case`: case ID or returned row ID
+- `Updated case`: case ID or returned rowid
 - `Changed fields`: only the fields sent in the request
 - `Next useful step`: optional, usually `list_cases(case_id=..., limit=1)` if the user needs the refreshed record
 

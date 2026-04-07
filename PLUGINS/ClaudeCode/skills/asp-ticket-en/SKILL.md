@@ -29,7 +29,7 @@ Use this skill for external ticket sync work on ASP.
 - Do not ask the user to choose an operation if the request already implies one.
 - Collect only missing required inputs.
 - Use `create_ticket` to create the synced ticket record.
-- Use `attach_ticket_to_case` to link an existing ticket record to a case once you have the ticket row ID.
+- Use `attach_ticket_to_case` to link an existing ticket record to a case once you have the ticket rowid.
 - Use `list_tickets` for browsing and lookup.
 - Use `update_ticket` only for fields the user explicitly wants changed.
 
@@ -37,7 +37,7 @@ Use this skill for external ticket sync work on ASP.
 
 1. If the user wants to create a synced ticket record, call `create_ticket`.
 2. If the user wants to attach a ticket to a case, first create the ticket when needed or retrieve an existing ticket
-   row ID, then call `attach_ticket_to_case`.
+   rowid, then call `attach_ticket_to_case`.
 3. If the user wants to browse or compare synced tickets, call `list_tickets`.
 4. If the user wants to revise synced ticket fields, call `update_ticket`.
 
@@ -48,7 +48,7 @@ Use this skill for external ticket sync work on ASP.
 1. Extract the narrowest useful filters from the request.
 2. Call `list_tickets`.
 3. Parse the returned JSON strings.
-4. Present a compact workflow-oriented view, and surface the ticket row ID when the user is likely to attach or reuse
+4. Present a compact workflow-oriented view, and surface the ticket rowid when the user is likely to attach or reuse
    the ticket next.
 
 Preferred response structure:
@@ -62,13 +62,13 @@ Then add one short interpretation line when useful.
 
 1. Collect the external ticket details the user wants to sync.
 2. Call `create_ticket`.
-3. Confirm the created ticket row ID.
+3. Confirm the created ticket rowid.
 4. If the ticket should be linked to a case, suggest attaching it next.
 
 ### Attach Ticket To Case
 
 1. Require `case_id`.
-2. If the user does not already have a ticket row ID, either call `create_ticket` for a new ticket or retrieve the
+2. If the user does not already have a ticket rowid, either call `create_ticket` for a new ticket or retrieve the
    existing ticket first.
 3. Call `attach_ticket_to_case(case_id=<case_id>, ticket_rowid=<ticket_rowid>)`.
 4. Confirm that the ticket is attached.
@@ -83,7 +83,7 @@ Then add one short interpretation line when useful.
 
 Preferred response structure:
 
-- `Updated ticket`: ticket ID or returned row ID
+- `Updated ticket`: ticket ID or returned rowid
 - `Changed fields`: only the fields sent in the request
 - `Next useful step`: optional, usually to attach it to a case or review the refreshed ticket
 

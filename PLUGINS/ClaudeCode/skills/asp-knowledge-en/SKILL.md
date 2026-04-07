@@ -70,7 +70,7 @@ Then add one short interpretation line when useful.
 
 Preferred response structure:
 
-- `Updated knowledge`: knowledge ID or returned row ID
+- `Updated knowledge`: knowledge ID or returned rowid
 - `Changed fields`: only the fields sent in the request
 - `Next useful step`: optional, usually to query similar knowledge or verify the updated record through a narrowed
   search

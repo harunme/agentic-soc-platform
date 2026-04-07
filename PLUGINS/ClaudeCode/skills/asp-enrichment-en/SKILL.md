@@ -29,7 +29,7 @@ Use this skill when analysis results should be saved back into ASP as structured
 - Use this skill when the goal is to persist analysis on a `case`, `alert`, or `artifact`.
 - Separate creation from attachment.
 - Use `create_enrichment` for a new result record.
-- Use `attach_enrichment_to_target` only after you have the enrichment row ID.
+- Use `attach_enrichment_to_target` only after you have the enrichment rowid.
 - Keep the payload compact and operational.
 - Prefer object-local skills for reviewing the object itself, and this skill for saving the result.
 
@@ -37,7 +37,7 @@ Use this skill when analysis results should be saved back into ASP as structured
 
 1. If the user wants to save a new structured result, call `create_enrichment` first.
 2. If the user wants to attach that result to a case, alert, or artifact, call `attach_enrichment_to_target`.
-3. If the user already has an existing enrichment row ID, skip creation and attach it directly.
+3. If the user already has an existing enrichment rowid, skip creation and attach it directly.
 4. If the user is still exploring the object rather than saving a result, use the corresponding object skill first.
 
 ## SOP
@@ -46,7 +46,7 @@ Use this skill when analysis results should be saved back into ASP as structured
 
 1. Require `target_type` and `target_id`.
 2. Convert the user's analysis into a compact structured enrichment payload.
-3. Call `create_enrichment` and keep the returned enrichment row ID.
+3. Call `create_enrichment` and keep the returned enrichment rowid.
 4. Call
    `attach_enrichment_to_target(target_type=<target_type>, target_id=<target_id>, enrichment_rowid=<created_rowid>)`.
 5. Confirm that the enrichment was created and attached.
@@ -54,7 +54,7 @@ Use this skill when analysis results should be saved back into ASP as structured
 Preferred response structure:
 
 - `Target`: target type and target ID
-- `Enrichment`: created enrichment row ID
+- `Enrichment`: created enrichment rowid
 - `Attachment`: attached to target
 - `Next useful step`: optional, usually continue investigation, review the enriched object, or run follow-up automation
 
@@ -68,7 +68,7 @@ Preferred response structure:
 ## Clarification Rules
 
 - Ask for `target_type` and `target_id` only when missing.
-- Ask for the enrichment row ID only when the user wants to reuse an existing enrichment and did not provide it.
+- Ask for the enrichment rowid only when the user wants to reuse an existing enrichment and did not provide it.
 - If the user only says "save this result", infer the most obvious target object from the current request when it is
   clear.
 - If the user wants a note rather than a structured result, still prefer enrichment when the content is investigative
@@ -85,4 +85,4 @@ Preferred response structure:
 
 - If the target object is missing, say so directly.
 - If the enrichment payload is incomplete, ask one focused follow-up instead of guessing.
-- If attachment fails because the enrichment row ID is missing, ask for it or create a new enrichment first.
+- If attachment fails because the enrichment rowid is missing, ask for it or create a new enrichment first.
